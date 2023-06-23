@@ -22,26 +22,20 @@ def StandardDeviation(values):
         else:
             nValues -= 1
     stdDeviation = math.sqrt(stdDeviationNumerator / nValues)
-    # print(stdDeviationNumerator)
-    # print("-----------------\nStandard Deviation: " + str(round(stdDeviation,6)))
-    # print("Mean: " + str(mean) + "\n-----------------" )
+
     return stdDeviation
 
 def ZScore(values):
     mean = pd.Series(values).mean()
-    print(mean)
-    zscores = pd.Series(values)
+    print("Mean: "+ str(mean))
     stdDeviation = StandardDeviation(values)
+    print(stdDeviation)
     somme =0
-    for value in zscores:
-        if not math.isnan(value) and somme < 10:
-            somme+=1
-            print("Valeur brut: " + str(value))
-            value = (value - mean)/stdDeviation
-            print("Z-Score: " + str(value))
-    print("Z-Score 10: "+ str(zscores[10]))
-    # print(zscores)
-    return zscores
+    zscores = []
+    for value in values:
+            zscores.append((value - mean)/stdDeviation)
+    print(pd.Series(zscores))
+    return pd.Series(zscores)
 
 
 class RSItest(Strategy):
@@ -51,6 +45,7 @@ class RSItest(Strategy):
     def init(self):
         self.rsi1 = self.I(ta.rsi, pd.Series(self.data.Close),self.rsi_time)
         self.macd1 = self.I(ta.macd, pd.Series(self.data.Close),10,30,10)
+        self.zscore = self.I(ZScore, self.data.Close)
         StandardDeviation(self.rsi1)
         ZScore(self.rsi1)
         # print(self.rsi1[5])
@@ -64,7 +59,7 @@ class RSItest(Strategy):
 bt = Backtest(data,RSItest,cash=100_000, commission=0.002)
 stats = bt.run()
 print(stats)
-# bt.plot()
+bt.plot()
 
 
 
